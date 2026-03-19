@@ -8,7 +8,7 @@ public final class UpdateChecker: Sendable {
 
     private static let apiURL = URL(string: "https://api.github.com/repos/ohtufan/kafein/releases/latest")!
     public static let releasesURL = URL(string: "https://github.com/ohtufan/kafein/releases")!
-    public static let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.0"
+    public static let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2.0"
 
     public init() {}
 
