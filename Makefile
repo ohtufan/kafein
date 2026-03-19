@@ -17,6 +17,7 @@ bundle: build
 	@mkdir -p "$(APP_BUNDLE)/Contents/Resources"
 	@cp "$(BUILD_DIR)/Kafein" "$(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	@cp "Resources/Info.plist" "$(APP_BUNDLE)/Contents/"
+	@cp "Resources/AppIcon.icns" "$(APP_BUNDLE)/Contents/Resources/"
 	@echo "Built $(APP_BUNDLE)"
 
 install: bundle

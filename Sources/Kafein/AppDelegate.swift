@@ -18,6 +18,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let updateChecker = UpdateChecker()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns") {
+            NSApp.applicationIconImage = NSImage(contentsOfFile: iconPath)
+        }
         setupStatusItem()
         setupHotKey()
         setupBatteryMonitoring()
@@ -119,11 +122,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             menu.addItem(.separator())
         }
 
-        // Settings & Quit
+        // Settings, About & Quit
+        let aboutItem = NSMenuItem(title: "About Kafein", action: #selector(showAbout), keyEquivalent: "")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+
         let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openPreferences), keyEquivalent: ",")
         settingsItem.keyEquivalentModifierMask = [.command]
         settingsItem.target = self
         menu.addItem(settingsItem)
+
+        menu.addItem(.separator())
 
         let quitItem = NSMenuItem(title: "Quit Kafein", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.keyEquivalentModifierMask = [.command]
