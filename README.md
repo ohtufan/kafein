@@ -28,10 +28,11 @@ make bundle
 make install
 ```
 
-### Homebrew (coming soon)
+### Homebrew
 
 ```bash
-brew install taostudio/tap/kafein
+brew tap ohtufan/tap
+brew install kafein
 ```
 
 ## Usage
