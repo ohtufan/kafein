@@ -10,80 +10,102 @@ public struct PreferencesView: View {
     }
 
     public var body: some View {
-        TabView {
-            generalTab
-                .tabItem { Label("General", systemImage: "gear") }
-
-            batteryTab
-                .tabItem { Label("Battery", systemImage: "battery.100") }
-
-            scheduleTab
-                .tabItem { Label("Schedule", systemImage: "calendar") }
-        }
-        .frame(width: 400, height: 250)
-    }
-
-    private var generalTab: some View {
         Form {
-            Toggle("Launch at Login", isOn: Binding(
-                get: { preferences.launchAtLogin },
-                set: { newValue in
-                    if launchAtLogin.setEnabled(newValue) {
-                        preferences.launchAtLogin = newValue
+            Section {
+                Toggle("Launch at Login", isOn: Binding(
+                    get: { preferences.launchAtLogin },
+                    set: { newValue in
+                        if launchAtLogin.setEnabled(newValue) {
+                            preferences.launchAtLogin = newValue
+                        }
                     }
-                }
-            ))
-
-            Toggle("Activate at Launch", isOn: $preferences.activateAtLaunch)
-
-            Toggle("Global Hotkey (Cmd+Shift+K)", isOn: $preferences.hotKeyEnabled)
-
-            Toggle("Check for Updates", isOn: $preferences.checkForUpdates)
-
-            HStack {
-                Text("Default Duration:")
-                Picker("", selection: $preferences.defaultDuration) {
+                ))
+                Toggle("Activate at Launch", isOn: $preferences.activateAtLaunch)
+                Picker("Default Duration", selection: $preferences.defaultDuration) {
                     ForEach(TimerPreset.allCases) { preset in
                         Text(preset.displayName).tag(preset.id)
                     }
                 }
-                .labelsHidden()
-                .frame(width: 140)
             }
-        }
-        .padding()
-    }
 
-    private var batteryTab: some View {
-        Form {
-            Toggle("Disable on Battery Power", isOn: $preferences.disableOnBattery)
-
-            if preferences.disableOnBattery {
-                HStack {
-                    Text("Battery Threshold:")
-                    Picker("", selection: $preferences.batteryThreshold) {
+            Section {
+                Toggle("Disable on Battery Power", isOn: $preferences.disableOnBattery)
+                if preferences.disableOnBattery {
+                    Picker("Battery Threshold", selection: $preferences.batteryThreshold) {
                         Text("10%").tag(10)
                         Text("15%").tag(15)
                         Text("20%").tag(20)
                         Text("25%").tag(25)
                         Text("30%").tag(30)
                     }
-                    .labelsHidden()
-                    .frame(width: 80)
                 }
             }
+
+            Section {
+                scheduleSection
+            }
+
+            Section {
+                Toggle("Global Hotkey (Cmd+Shift+K)", isOn: $preferences.hotKeyEnabled)
+                Toggle("Check for Updates", isOn: $preferences.checkForUpdates)
+            }
         }
-        .padding()
+        .formStyle(.grouped)
+        .frame(width: 360, height: 420)
     }
 
-    private var scheduleTab: some View {
-        VStack {
-            let scheduleBinding = Binding<Schedule>(
-                get: { preferences.schedule ?? Schedule() },
-                set: { preferences.schedule = $0 }
-            )
-            ScheduleEditor(schedule: scheduleBinding)
+    @ViewBuilder
+    private var scheduleSection: some View {
+        let scheduleBinding = Binding<Schedule>(
+            get: { preferences.schedule ?? Schedule() },
+            set: { preferences.schedule = $0 }
+        )
+
+        Toggle("Enable Schedule", isOn: scheduleBinding.isEnabled)
+
+        if scheduleBinding.wrappedValue.isEnabled {
+            HStack(spacing: 4) {
+                ForEach(Weekday.allCases) { day in
+                    Toggle(day.shortName, isOn: Binding(
+                        get: { scheduleBinding.wrappedValue.weekdays.contains(day) },
+                        set: { isOn in
+                            if isOn {
+                                scheduleBinding.wrappedValue.weekdays.insert(day)
+                            } else {
+                                scheduleBinding.wrappedValue.weekdays.remove(day)
+                            }
+                        }
+                    ))
+                    .toggleStyle(.button)
+                    .controlSize(.small)
+                }
+            }
+
+            DatePicker("Start", selection: Binding(
+                get: {
+                    Calendar.current.date(from: DateComponents(
+                        hour: scheduleBinding.wrappedValue.startHour,
+                        minute: scheduleBinding.wrappedValue.startMinute)) ?? .now
+                },
+                set: { date in
+                    let comps = Calendar.current.dateComponents([.hour, .minute], from: date)
+                    scheduleBinding.wrappedValue.startHour = comps.hour ?? 9
+                    scheduleBinding.wrappedValue.startMinute = comps.minute ?? 0
+                }
+            ), displayedComponents: .hourAndMinute)
+
+            DatePicker("End", selection: Binding(
+                get: {
+                    Calendar.current.date(from: DateComponents(
+                        hour: scheduleBinding.wrappedValue.endHour,
+                        minute: scheduleBinding.wrappedValue.endMinute)) ?? .now
+                },
+                set: { date in
+                    let comps = Calendar.current.dateComponents([.hour, .minute], from: date)
+                    scheduleBinding.wrappedValue.endHour = comps.hour ?? 17
+                    scheduleBinding.wrappedValue.endMinute = comps.minute ?? 0
+                }
+            ), displayedComponents: .hourAndMinute)
         }
-        .padding()
     }
 }

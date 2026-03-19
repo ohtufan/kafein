@@ -1,9 +1,11 @@
 import AppKit
 import KafeinCore
+import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var menu: NSMenu!
+    private var preferencesWindow: NSWindow?
 
     let appState = AppState()
     let preferences = Preferences()
@@ -71,21 +73,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func rebuildMenu() {
         menu = NSMenu()
 
+        // Toggle
         let toggleTitle = appState.isActive ? "Deactivate" : "Activate"
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(menuToggle), keyEquivalent: "k")
         toggleItem.keyEquivalentModifierMask = [.command]
         toggleItem.target = self
         menu.addItem(toggleItem)
 
-        menu.addItem(.separator())
-
+        // Status
         if appState.isActive {
             let statusItem = NSMenuItem(title: appState.statusText, action: nil, keyEquivalent: "")
             statusItem.isEnabled = false
             menu.addItem(statusItem)
-            menu.addItem(.separator())
         }
 
+        menu.addItem(.separator())
+
+        // Timer presets
         let timerMenu = NSMenu()
         for preset in TimerPreset.defaultPresets {
             let item = NSMenuItem(title: preset.displayName, action: #selector(timerPresetSelected(_:)), keyEquivalent: "")
@@ -97,8 +101,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         timerItem.submenu = timerMenu
         menu.addItem(timerItem)
 
+        // Battery
         if let level = appState.batteryLevel, appState.hasBattery {
-            menu.addItem(.separator())
             let suffix = appState.isOnBattery ? " (Battery)" : " (AC)"
             let battItem = NSMenuItem(title: "Battery: \(level)%\(suffix)", action: nil, keyEquivalent: "")
             battItem.isEnabled = false
@@ -107,22 +111,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
-        let prefsItem = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ",")
-        prefsItem.keyEquivalentModifierMask = [.command]
-        prefsItem.target = self
-        menu.addItem(prefsItem)
-
-        let aboutItem = NSMenuItem(title: "About Kafein", action: #selector(showAbout), keyEquivalent: "")
-        aboutItem.target = self
-        menu.addItem(aboutItem)
-
+        // Update
         if let version = appState.availableUpdate {
             let updateItem = NSMenuItem(title: "Update Available (v\(version))", action: #selector(openReleasesPage), keyEquivalent: "")
             updateItem.target = self
             menu.addItem(updateItem)
+            menu.addItem(.separator())
         }
 
-        menu.addItem(.separator())
+        // Settings & Quit
+        let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openPreferences), keyEquivalent: ",")
+        settingsItem.keyEquivalentModifierMask = [.command]
+        settingsItem.target = self
+        menu.addItem(settingsItem)
 
         let quitItem = NSMenuItem(title: "Quit Kafein", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.keyEquivalentModifierMask = [.command]
@@ -148,8 +149,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openPreferences() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        if let window = preferencesWindow, window.isVisible {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let view = PreferencesView(preferences: preferences, launchAtLogin: launchAtLogin)
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.frame = NSRect(x: 0, y: 0, width: 400, height: 250)
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 250),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Kafein Settings"
+        window.contentView = hostingView
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        preferencesWindow = window
     }
 
     @objc private func showAbout() {

@@ -8,14 +8,13 @@ public final class UpdateChecker: Sendable {
 
     private static let apiURL = URL(string: "https://api.github.com/repos/ohtufan/kafein/releases/latest")!
     public static let releasesURL = URL(string: "https://github.com/ohtufan/kafein/releases")!
+    public static let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.0"
 
     public init() {}
 
     /// Checks GitHub for the latest release. Returns the version string (without "v" prefix) if newer, nil otherwise.
     public func checkForUpdate() async -> String? {
-        guard let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
-            return nil
-        }
+        let currentVersion = Self.currentVersion
 
         do {
             var request = URLRequest(url: Self.apiURL)

@@ -7,10 +7,7 @@ struct KafeinApp: App {
 
     var body: some Scene {
         Settings {
-            PreferencesView(
-                preferences: appDelegate.preferences,
-                launchAtLogin: appDelegate.launchAtLogin
-            )
+            EmptyView()
         }
     }
 }
