@@ -8,6 +8,9 @@ public final class Preferences {
     private let launchAtLoginKey = "kafein.launchAtLogin"
     private let hotKeyEnabledKey = "kafein.hotKeyEnabled"
     private let disableOnBatteryKey = "kafein.disableOnBattery"
+    private let activateAtLaunchKey = "kafein.activateAtLaunch"
+    private let defaultDurationKey = "kafein.defaultDuration"
+    private let checkForUpdatesKey = "kafein.checkForUpdates"
 
     public var batteryThreshold: Int {
         didSet { defaults.set(batteryThreshold, forKey: batteryThresholdKey) }
@@ -25,6 +28,22 @@ public final class Preferences {
         didSet { defaults.set(disableOnBattery, forKey: disableOnBatteryKey) }
     }
 
+    public var activateAtLaunch: Bool {
+        didSet { defaults.set(activateAtLaunch, forKey: activateAtLaunchKey) }
+    }
+
+    public var defaultDuration: String {
+        didSet { defaults.set(defaultDuration, forKey: defaultDurationKey) }
+    }
+
+    public var checkForUpdates: Bool {
+        didSet { defaults.set(checkForUpdates, forKey: checkForUpdatesKey) }
+    }
+
+    public var defaultPreset: TimerPreset {
+        TimerPreset.allCases.first { $0.id == defaultDuration } ?? .indefinite
+    }
+
     public var schedule: Schedule? {
         didSet { saveSchedule() }
     }
@@ -40,6 +59,10 @@ public final class Preferences {
             ? true : defaults.bool(forKey: hotKeyEnabledKey)
         self.disableOnBattery = defaults.object(forKey: disableOnBatteryKey) == nil
             ? true : defaults.bool(forKey: disableOnBatteryKey)
+        self.activateAtLaunch = defaults.bool(forKey: activateAtLaunchKey)
+        self.defaultDuration = defaults.string(forKey: defaultDurationKey) ?? "indefinite"
+        self.checkForUpdates = defaults.object(forKey: checkForUpdatesKey) == nil
+            ? true : defaults.bool(forKey: checkForUpdatesKey)
 
         self.schedule = loadSchedule()
     }

@@ -11,6 +11,7 @@ public final class AppState {
     public var hasBattery: Bool = false
     public var schedule: Schedule?
     public var isScheduleActive: Bool = false
+    public var availableUpdate: String?
 
     public var remainingFormatted: String {
         guard remainingSeconds > 0 else { return "" }

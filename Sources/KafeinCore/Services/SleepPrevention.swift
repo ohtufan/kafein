@@ -12,8 +12,10 @@ public final class SleepPrevention: SleepPreventable {
         guard !isActive else { return }
 
         let reason = "Kafein is preventing sleep" as CFString
+
+        // Prevent display sleep (also prevents system sleep and screen saver)
         let status = IOPMAssertionCreateWithName(
-            kIOPMAssertPreventUserIdleSystemSleep as CFString,
+            kIOPMAssertPreventUserIdleDisplaySleep as CFString,
             IOPMAssertionLevel(kIOPMAssertionLevelOn),
             reason,
             &assertionID

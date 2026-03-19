@@ -34,7 +34,22 @@ public struct PreferencesView: View {
                 }
             ))
 
+            Toggle("Activate at Launch", isOn: $preferences.activateAtLaunch)
+
             Toggle("Global Hotkey (Cmd+Shift+K)", isOn: $preferences.hotKeyEnabled)
+
+            Toggle("Check for Updates", isOn: $preferences.checkForUpdates)
+
+            HStack {
+                Text("Default Duration:")
+                Picker("", selection: $preferences.defaultDuration) {
+                    ForEach(TimerPreset.allCases) { preset in
+                        Text(preset.displayName).tag(preset.id)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 140)
+            }
         }
         .padding()
     }
